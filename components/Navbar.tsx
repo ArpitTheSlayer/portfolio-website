@@ -10,6 +10,26 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
+const NavLinks = () => {
+  return (
+    <ul className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
+      <li className="text-h3">
+        <Link href={"#"}>Home</Link>
+      </li>
+      <li className="text-h3">
+        <Link href={"#"}>Projects</Link>
+      </li>
+      <li className="text-h3">
+        <Link href={"#"}>About Me</Link>
+      </li>
+      <li className="text-h3">
+        <Link href={"#"}>Contact</Link>
+      </li>
+      <Button text={"Download CV"} link={"/Resume.pdf"} />
+    </ul>
+  );
+};
+
 const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -20,9 +40,12 @@ const Navbar = () => {
         <Image
           src={theme === "dark" ? logoDark : logoLight}
           alt="Logo"
-          className="size-8"
+          className="size-8 md:size-12"
         />
       </Link>
+      <div className="hidden md:block">
+        <NavLinks />
+      </div>
       <div className="flex gap-8">
         <Image
           src={theme === "dark" ? sun : moon}
@@ -39,7 +62,7 @@ const Navbar = () => {
           viewBox="0 0 32 32"
           xmlns="http://www.w3.org/2000/svg"
           onClick={() => setShowMenu(!showMenu)}
-          className="size-8 cursor-pointer stroke-tia-maria-950 dark:stroke-tia-maria-50 select-none"
+          className="size-8 cursor-pointer stroke-tia-maria-950 dark:stroke-tia-maria-50 select-none md:hidden"
         >
           <path
             d="M4 16H28M4 8H28M4 24H28"
@@ -54,21 +77,7 @@ const Navbar = () => {
           showMenu ? "" : "hidden"
         }`}
       >
-        <ul className="flex flex-col gap-4 items-center">
-          <li className="text-h3">
-            <Link href={"#"}>Home</Link>
-          </li>
-          <li className="text-h3">
-            <Link href={"#"}>Projects</Link>
-          </li>
-          <li className="text-h3">
-            <Link href={"#"}>About Me</Link>
-          </li>
-          <li className="text-h3">
-            <Link href={"#"}>Contact</Link>
-          </li>
-          <Button text={"Download CV"} link={"/Resume.pdf"} />
-        </ul>
+        <NavLinks />
       </div>
     </div>
   );
