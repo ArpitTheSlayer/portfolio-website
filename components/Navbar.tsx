@@ -35,7 +35,7 @@ const Navbar = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex justify-between m-4 relative">
+    <div className="flex justify-between m-4 md:m-8 relative">
       <Link href={"/"}>
         <Image
           src={theme === "dark" ? logoDark : logoLight}

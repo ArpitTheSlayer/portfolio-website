@@ -22,8 +22,8 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <div className="mx-4 mt-8">
-        <div>
+      <div className="mx-4 md:mx-8 mt-8 lg:flex lg:gap-32 lg:flex-row-reverse">
+        <div className="lg:flex-1">
           <Image src={profilePic} alt="Profile Picture" className="w-full" />
           <div className="flex gap-4 justify-center mt-4">
             <Link href={"https://github.com/arpittheslayer"} target="_blank">
@@ -94,14 +94,16 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <div className="mt-8 flex flex-col gap-4">
+        <div className="mt-8 flex flex-col gap-4 lg:flex-1">
           <div>
             <div className="text-h2">Hi I am</div>
             <div className="text-[2rem] font-semibold text-tia-maria-400">
               Arpit Pandey
             </div>
-            <div className="text-5xl font-bold">Full Stack</div>
-            <div className="text-5xl font-bold w-fit relative left-24">
+            <div className="text-5xl lg:text-6xl xl:text-8xl font-bold">
+              Full Stack
+            </div>
+            <div className="text-5xl lg:text-6xl xl:text-8xl font-bold w-fit relative left-24">
               Developer
             </div>
           </div>
