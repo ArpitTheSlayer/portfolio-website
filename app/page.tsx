@@ -161,7 +161,7 @@ export default function Home() {
       {/* Skills Section */}
       <div className="mx-4 mt-8">
         <h1 className="text-h1 text-center mb-8">Skills</h1>
-        <div className="flex flex-col gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
           <div className="flex gap-4 items-center">
             <Image src={htmlIcon} alt="HTML Icon" className="size-16" />
             <h2 className="text-h2">HTML</h2>
@@ -187,6 +187,10 @@ export default function Home() {
             <h2 className="text-h2">React</h2>
           </div>
           <div className="flex gap-4 items-center">
+            <Image src={nextjsIcon} alt="h" className="size-16 dark:invert" />
+            <h2 className="text-h2">Next.js</h2>
+          </div>
+          <div className="flex gap-4 items-center">
             <Image
               src={expressIcon}
               alt="Express.js Icon"
@@ -209,10 +213,6 @@ export default function Home() {
           <div className="flex gap-4 items-center">
             <Image src={reduxIcon} alt="Redux Icon" className="size-16" />
             <h2 className="text-h2">Redux</h2>
-          </div>
-          <div className="flex gap-4 items-center">
-            <Image src={nextjsIcon} alt="h" className="size-16 dark:invert" />
-            <h2 className="text-h2">Next.js</h2>
           </div>
           <div className="flex gap-4 items-center">
             <Image src={figmaIcon} alt="Figma Icon" className="size-16" />
