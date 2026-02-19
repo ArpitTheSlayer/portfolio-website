@@ -16,20 +16,20 @@ const Footer = () => {
           <Image
             src={theme === "dark" ? logoDark : logoLight}
             alt="Logo"
-            className="size-8 mb-4"
+            className="size-8 md:size-12 mb-4"
           />
         </Link>
-        <ul className="flex flex-col gap-4 items-center">
-          <li className="text-h3">
+        <ul className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
+          <li className="text-h3 hover:underline">
             <Link href={"#"}>Home</Link>
           </li>
-          <li className="text-h3">
+          <li className="text-h3 hover:underline">
             <Link href={"#"}>Projects</Link>
           </li>
-          <li className="text-h3">
+          <li className="text-h3 hover:underline">
             <Link href={"#"}>About Me</Link>
           </li>
-          <li className="text-h3">
+          <li className="text-h3 hover:underline">
             <Link href={"#"}>Contact</Link>
           </li>
         </ul>
@@ -105,7 +105,7 @@ const Footer = () => {
           <Link
             href={"https://github.com/arpittheslayer"}
             target="_blank"
-            className="text-tia-maria-500"
+            className="text-tia-maria-500 hover:underline"
           >
             ArpitTheSlayer
           </Link>{" "}

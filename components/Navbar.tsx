@@ -13,16 +13,16 @@ import { useTheme } from "next-themes";
 const NavLinks = () => {
   return (
     <ul className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
-      <li className="text-h3">
+      <li className="text-h3 hover:underline">
         <Link href={"#"}>Home</Link>
       </li>
-      <li className="text-h3">
+      <li className="text-h3 hover:underline">
         <Link href={"#"}>Projects</Link>
       </li>
-      <li className="text-h3">
+      <li className="text-h3 hover:underline">
         <Link href={"#"}>About Me</Link>
       </li>
-      <li className="text-h3">
+      <li className="text-h3 hover:underline">
         <Link href={"#"}>Contact</Link>
       </li>
       <Button text={"Download CV"} link={"/Resume.pdf"} />
