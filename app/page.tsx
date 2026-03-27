@@ -24,7 +24,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="mx-4 md:mx-8 mt-8 lg:flex lg:gap-32 lg:flex-row-reverse">
         <div className="lg:flex-1">
-          <Image src={profilePic} alt="Profile Picture" className="w-full" />
+          <Image loading="eager" src={profilePic} alt="Profile Picture" className="w-full" />
           <div className="flex gap-4 justify-center mt-4">
             <Link href={"https://github.com/arpittheslayer"} target="_blank">
               <svg
@@ -128,7 +128,7 @@ export default function Home() {
       </div>
 
       {/* About Section */}
-      <div className="mx-4 mt-8">
+      <div id="about" className="mx-4 mt-8">
         <h1 className="text-h1 text-center mb-8">About Me</h1>
         <h2 className="text-h2 mb-4">The Journey</h2>
         <p className="mb-4">

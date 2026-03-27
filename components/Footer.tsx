@@ -5,32 +5,39 @@ import logoLight from "@/assets/svg/Logo-Light.svg";
 import logoDark from "@/assets/svg/Logo-Dark.svg";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const [isHydrationFinished, setIsHydrationFinished] = useState(false)
   const { theme } = useTheme();
+
+  useEffect(() => {
+    setIsHydrationFinished(true)
+  }, [])
+
 
   return (
     <div className="mt-8">
       <div className="bg-tia-maria-100 dark:bg-tia-maria-900 flex flex-col items-center py-8">
         <Link href={"/"}>
-          <Image
+          {(isHydrationFinished) && <Image
             src={theme === "dark" ? logoDark : logoLight}
             alt="Logo"
             className="size-8 md:size-12 mb-4"
-          />
+          />}
         </Link>
         <ul className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
           <li className="text-h3 hover:underline">
-            <Link href={"#"}>Home</Link>
+            <Link href={"/"}>Home</Link>
           </li>
           <li className="text-h3 hover:underline">
-            <Link href={"#"}>Projects</Link>
+            <Link href={"/projects"}>Projects</Link>
           </li>
           <li className="text-h3 hover:underline">
-            <Link href={"#"}>About Me</Link>
+            <Link href={"/#about"}>About Me</Link>
           </li>
           <li className="text-h3 hover:underline">
-            <Link href={"#"}>Contact</Link>
+            <Link href={"/contact"}>Contact</Link>
           </li>
         </ul>
         <div className="flex gap-4 justify-center mt-4">
