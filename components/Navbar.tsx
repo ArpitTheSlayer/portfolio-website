@@ -6,7 +6,7 @@ import logoDark from "@/assets/svg/Logo-Dark.svg";
 import moon from "@/assets/svg/Moon.svg";
 import sun from "@/assets/svg/Sun.svg";
 import Button from "./Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
@@ -14,16 +14,16 @@ const NavLinks = () => {
   return (
     <ul className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
       <li className="text-h3 hover:underline">
-        <Link href={"#"}>Home</Link>
+        <Link href={"/"}>Home</Link>
       </li>
       <li className="text-h3 hover:underline">
-        <Link href={"#"}>Projects</Link>
+        <Link href={"/projects"}>Projects</Link>
       </li>
       <li className="text-h3 hover:underline">
-        <Link href={"#"}>About Me</Link>
+        <Link href={"/#about"}>About Me</Link>
       </li>
       <li className="text-h3 hover:underline">
-        <Link href={"#"}>Contact</Link>
+        <Link href={"/contact"}>Contact</Link>
       </li>
       <Button text={"Download CV"} link={"/Resume.pdf"} />
     </ul>
@@ -32,29 +32,35 @@ const NavLinks = () => {
 
 const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false);
+  const [isHydrationFinished, setIsHydrationFinished] = useState(false)
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setIsHydrationFinished(true)
+  }, [])
+
 
   return (
     <div className="flex justify-between m-4 md:m-8 relative">
       <Link href={"/"}>
-        <Image
+        {(isHydrationFinished) && <Image
           src={theme === "dark" ? logoDark : logoLight}
           alt="Logo"
           className="size-8 md:size-12"
-        />
+        />}
       </Link>
       <div className="hidden md:block">
         <NavLinks />
       </div>
       <div className="flex gap-8">
-        <Image
+        {(isHydrationFinished) && <Image
           src={theme === "dark" ? sun : moon}
           alt={theme === "dark" ? "Sun icon" : "Half moon icon"}
           onClick={() => {
             setTheme(theme === "dark" ? "light" : "dark");
           }}
           className="size-8 cursor-pointer"
-        />
+        />}
         <svg
           width="32"
           height="32"
@@ -73,9 +79,8 @@ const Navbar = () => {
         </svg>
       </div>
       <div
-        className={`absolute top-12 bg-tia-maria-50 dark:bg-tia-maria-950 w-full p-4 ${
-          showMenu ? "" : "hidden"
-        }`}
+        className={`absolute top-12 bg-tia-maria-50 dark:bg-tia-maria-950 w-full p-4 ${showMenu ? "" : "hidden"
+          }`}
       >
         <NavLinks />
       </div>
