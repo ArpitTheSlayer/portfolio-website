@@ -109,7 +109,7 @@ export default function Home() {
           </div>
           <div>
             <p className="text-justify mb-4">
-              <span className="font-bold">Front-End Developer</span>{" "}
+              <span className="font-bold">Full Stack Developer</span>{" "}
               specializing in high-performance, pixel-perfect web experiences. I
               bridge the gap between complex design and functional code using{" "}
               <span className="font-bold">
