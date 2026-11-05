@@ -1,7 +1,7 @@
 # Portfolio Redesign — "Signal"
 
 **Date:** 2026-11-05
-**Status:** Awaiting approval
+**Status:** Approved — 2026-11-05
 **Direction chosen:** 01 — Signal (from `design/portfolio-redesign-directions.figcraft`)
 
 ## Intent
