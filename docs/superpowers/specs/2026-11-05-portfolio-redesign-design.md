@@ -25,7 +25,7 @@ This redesign turns the public site into a hiring argument. The primary reader i
 - No CMS/schema changes; the existing `Project` / `Message` / `Media` models and admin panel stay as they are.
 - No blog, testimonials, client logos, pricing or services pages.
 - No full redesign of the admin dashboard. It keeps its current layout and behaviour; it may inherit updated shared colours and button styling.
-- No new photography or generated imagery. Use the existing portrait and project screenshots.
+- No new photography or generated imagery. Use the existing portrait, the existing project screenshots, and the freshly captured live-site screenshots for Digital Poonam and AI Bizz Pro (`public/images/project-images/digital-poonam.png` and `aibizzpro.png`, both 1600×800).
 - No dark mode in this release (decision explained below).
 
 ## Anti-goals
@@ -164,9 +164,9 @@ Limits: hero headline ≤ 3 lines at desktop and ≤ 4 at mobile. Intro paragrap
    - Right: portrait, 396×440 desktop, 4:5 crop, clipped square frame; mono caption; "Currently" block with role, company, dates and location.
    - Hero content is real and editable in one data object at the top of the page file.
 
-2. **Selected work** — mono label "Selected work", count "03 / 06", three cards in a row (416px wide, 112px image, 2.05:1 crop).
+2. **Selected work** — mono label "Selected work", count "03 / 08" derived from the project data (never hardcoded), three cards in a row (416px wide, 112px image, 2.05:1 crop).
    - Each card: real screenshot, project name, stack line, accent arrow.
-   - Order: Digital Poonam, AI Bizz Pro, Tomato (the first three by `order`), with a "All projects" text link.
+   - Featured set: Digital Poonam, AI Bizz Pro, Tomato (the first three by `order`), with an "All projects" text link. Both commercial projects now use real live-site captures, not the shared placeholder.
    - Entire card is one link; hover moves the arrow 3px and underlines the title.
 
 3. **Experience** — rule + mono label. One role: Frontend Developer, Digital Poonam, May 2026 — Present, Raipur. The five existing achievements are listed with a thin accent left rule, not checkmarks in cards. The key technologies appear as a mono line.
@@ -271,9 +271,11 @@ Delete or stop using the old gradient/glow patterns. Old SVG and image assets ma
 - Update `app/globals.css`: replace brand tokens with the new token set; remove gradient/glow utilities; set paper background and ink text; keep Tailwind v4 `@theme` usage.
 - Update `app/layout.tsx`: Inter + Geist Mono via `next/font`, paper background, metadata (`Arpit Pandey — Frontend Developer`), Open Graph basics. Remove `ThemeProvider` and `next-themes` usage.
 - Rewrite `app/page.tsx` as a server component. Extract only the mobile menu and reveal animations into small client components. Hero/credential/experience/education/toolkit data stays in a typed object at the top of the file (or a local `lib/profile.ts` if it improves clarity).
+- Home project data: read the same project source as the rest of the site on the server, with `revalidate = 60` and the existing `defaultProjects` fallback when the database is unavailable. Admin edits and reorders appear on the home page within one minute without a redeploy. The projects index keeps its current client-side fetch so admin changes appear there immediately.
 - Rewrite `components/Navbar.tsx`, `Footer.tsx`, `Button.tsx`; add `SectionLabel`, `WorkCard`, `ContactForm`, `Reveal` as needed.
 - Restyle `app/projects/page.tsx`, `app/projects/[slug]/page.tsx`, `app/contact/page.tsx`, `components/MediaCarousel.tsx`, `components/MarkdownViewer.tsx`.
-- Keep `lib/defaultProjects.ts`, `lib/mongodb.ts`, `lib/auth.ts`, `lib/slug.ts`, `models/*`, `app/api/*`, and admin pages functionally unchanged.
+- Update the `src` for Digital Poonam and AI Bizz Pro in `lib/defaultProjects.ts` to the new captures. If the live database already has these records, update their `src` through the admin panel (or a one-off update) so the database does not keep pointing at `dummy-landing-page.png`; the fallback must be correct either way.
+- Keep `lib/defaultProjects.ts` in shape otherwise, along with `lib/mongodb.ts`, `lib/auth.ts`, `lib/slug.ts`, `models/*`, `app/api/*`, and admin pages functionally unchanged.
 - Remove the theme toggle and `next-themes` dependency if nothing else uses it. Remove `Moon.svg` / `Sun.svg` imports.
 - Use `next/image` for all raster images with correct `sizes`; portrait gets `priority`; project covers lazy-load.
 - Metadata: per-page titles/descriptions; case study metadata already exists and stays.
@@ -302,3 +304,4 @@ The current site ships a light/dark toggle. This redesign is a paper-and-ink sys
 - Reduced-motion pass.
 - Admin: login, project create/edit/delete/reorder, image upload, message list, delete, logout all still work.
 - No console errors; images have dimensions and alt text; no layout shift from the hero portrait.
+- The two new captures render on the home cards, the projects index and both case studies, and the old `dummy-landing-page.png` is no longer used for Digital Poonam or AI Bizz Pro.
