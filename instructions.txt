@@ -1,0 +1,6 @@
+Human follow-ups for the Signal redesign:
+
+1. If the live database already stores Digital Poonam and AI Bizz Pro records, update their `src` in /admin to `/images/project-images/digital-poonam.png` and `/images/project-images/aibizzpro.png` so the database stops pointing at `dummy-landing-page.png`.
+2. Run the keyboard pass on the mobile drawer: focus enters, Tab cycles, Escape closes, focus returns to the trigger. Test the contact form copy buttons too.
+3. Run the admin smoke test: login, project create/edit/delete/reorder, image upload, message list/delete, logout.
+4. Check the site in both light and dark at 1440, 1024, 768, 390 and 360 widths.
