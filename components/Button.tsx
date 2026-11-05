@@ -1,12 +1,57 @@
 import Link from "next/link";
+import React from "react";
 
-const Button = ({ text = "Button", link = "#" }: any) => {
+interface ButtonProps {
+  text?: string;
+  link?: string;
+  onClick?: () => void;
+  variant?: "primary" | "outline" | "text";
+  className?: string;
+  children?: React.ReactNode;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+}
+
+const baseClasses =
+  "inline-flex h-11 items-center justify-center gap-2 rounded-[2px] px-5 text-sm font-semibold tracking-[0.01em] transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+
+const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
+  primary: "bg-ink text-paper hover:bg-ink-soft",
+  outline:
+    "border border-line-strong text-ink hover:border-ink hover:bg-ink/5",
+  text: "h-auto px-0 text-accent-ink underline-offset-4 hover:underline",
+};
+
+const Button: React.FC<ButtonProps> = ({
+  text,
+  link,
+  onClick,
+  variant = "primary",
+  className = "",
+  children,
+  type = "button",
+  disabled = false,
+}) => {
+  const classes = `${baseClasses} ${variantClasses[variant]} ${className}`;
+  const content = children ?? text;
+
+  if (link) {
+    return (
+      <Link href={link} className={classes}>
+        {content}
+      </Link>
+    );
+  }
+
   return (
-    <Link href={link}>
-      <button className="bg-tia-maria-500 hover:bg-tia-maria-600 transition-all text-tia-maria-50 px-6 py-2 rounded-sm cursor-pointer">
-        {text}
-      </button>
-    </Link>
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={classes}
+    >
+      {content}
+    </button>
   );
 };
 
