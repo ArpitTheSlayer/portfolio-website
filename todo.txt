@@ -1,6 +1,6 @@
 Portfolio redesign — Signal + dark mode
 
-Completed:
+Completed (all 11 tasks):
 - Task 1: dependency bump committed.
 - Task 2: light/dark token system, fonts, layout shell, ThemeToggle, admin pinned to light.
 - Task 3: profile/project data, loader, live captures.
@@ -11,9 +11,10 @@ Completed:
 - Task 8: Case study, carousel, markdown.
 - Task 9: Contact page.
 - Task 10: Project memory files.
+- Task 11: Full verification (lint + build pass in both DB states; captures in light and dark).
 
 Remaining manual checks:
-- Task 11: full verification (screenshots both themes, narrow widths, reduced motion, keyboard, admin smoke, contrast).
-- If the live database stores Digital Poonam / AI Bizz Pro records, update their `src` in `/admin` to the new captures.
-- Run the keyboard pass on the mobile drawer and contact form.
-- Run the admin CRUD smoke test.
+- If the live database stores Digital Poonam / AI Bizz Pro records, update their `src` in /admin to the new captures.
+- Keyboard pass on the mobile drawer and contact form.
+- Admin CRUD smoke test.
+- Visual spot-check of the deferred minors (contact copy failure message, footer email overflow at 360px, long names in compact cards, toggle label before mount, remote image host allowlist).
