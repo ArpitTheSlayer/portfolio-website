@@ -62,6 +62,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <noscript>
+            <style>{".reveal { opacity: 1 !important; transform: none !important; }"}</style>
+          </noscript>
           <a href="#main" className="skip-link">
             Skip to content
           </a>

@@ -105,8 +105,27 @@ body {
 /* Admin is out of the visual redesign and stays on the light palette. */
 [data-admin] {
   color-scheme: light;
-  background: #f3efe6;
-  color: #1b1815;
+  --paper: #f3efe6;
+  --paper-raised: #ebe4d7;
+  --paper-deep: #e2d9ca;
+  --ink: #1b1815;
+  --ink-soft: #4c463f;
+  --muted: #6b6259;
+  --line: #d8d0c3;
+  --line-strong: #b9ae9d;
+  --accent: #c2401b;
+  --accent-ink: #b23a16;
+  --ok: #226b3b;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Reveal content stays visible for users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 ::selection {
