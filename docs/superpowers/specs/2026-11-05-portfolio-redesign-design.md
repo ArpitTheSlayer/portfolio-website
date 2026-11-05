@@ -16,6 +16,7 @@ This redesign turns the public site into a hiring argument. The primary reader i
 - Within one scroll: three real projects with screenshots, stack and links.
 - Contact and CV reachable in at most two clicks from any page.
 - A coherent visual identity that does not depend on gradient text or decorative effects to feel designed.
+- One design that works in light and dark without a second layout or a second set of content.
 - Honest, specific content only. No invented metrics, years, clients or outcomes.
 - Accessible, fast and legible at every breakpoint.
 
@@ -24,9 +25,9 @@ This redesign turns the public site into a hiring argument. The primary reader i
 - No new backend features, API endpoints, database models or admin flows.
 - No CMS/schema changes; the existing `Project` / `Message` / `Media` models and admin panel stay as they are.
 - No blog, testimonials, client logos, pricing or services pages.
-- No full redesign of the admin dashboard. It keeps its current layout and behaviour; it may inherit updated shared colours and button styling.
+- No full redesign of the admin dashboard. It keeps its current layout and behaviour; it may inherit updated shared colours and button styling. Admin is pinned to the light palette so its existing layout stays legible in either public theme.
 - No new photography or generated imagery. Use the existing portrait, the existing project screenshots, and the freshly captured live-site screenshots for Digital Poonam and AI Bizz Pro (`public/images/project-images/digital-poonam.png` and `aibizzpro.png`, both 1600×800).
-- No dark mode in this release (decision explained below).
+- No third theme, per-section theming or theme-specific content. Light and dark share one layout, one set of facts and one component tree.
 
 ## Anti-goals
 
@@ -80,31 +81,51 @@ An editorial technical portfolio: warm off-white paper, ink-black type, one verm
 
 Key rules:
 
-- The page background is paper. There are no full-width dark bands, gradients or blurred surfaces.
+- The page background is paper in light mode and warm near-black in dark mode. There are no full-width bands, gradients or blurred surfaces in either theme.
 - Cards are flat: image, hairline rule, text. No glass, no shadow, no rounded pills.
 - Accent is used for at most one thing per view: a label, an arrow, a hover underline, one word.
 - Mono type is reserved for labels, metadata and numbers.
 - Every section starts with a hairline rule and an optional mono label.
 - Corners are 0–2px. If a radius is not needed, use 0.
+- Dark mode is an inversion of the same system, not a second visual language. Same type, same grid, same rules, same accent role.
 
 ### Design tokens
 
+Tokens are semantic CSS variables defined once per theme. Components use the Tailwind utilities generated from them (`bg-paper`, `text-ink`, `border-line`, `text-accent-ink`), so a component written once works in both themes. Components must not hardcode hex values or use `dark:` overrides for colour.
+
 ```css
-/* Colour */
---paper: #f3efe6;
---paper-raised: #ebe4d7;
---paper-deep: #e2d9ca;
---ink: #1b1815;
---ink-soft: #4c463f;
---muted: #6b6259;        /* 5.2:1 on paper */
---line: #d8d0c3;
---line-strong: #b9ae9d;
---accent: #c2401b;       /* decorative / large text */
---accent-ink: #b23a16;   /* small text on paper, 5.21:1 */
---ok: #226b3b;           /* availability, 5.66:1 */
+/* Light — paper and ink */
+:root {
+  --paper: #f3efe6;
+  --paper-raised: #ebe4d7;
+  --paper-deep: #e2d9ca;
+  --ink: #1b1815;
+  --ink-soft: #4c463f;
+  --muted: #6b6259;        /* 5.2:1 on paper */
+  --line: #d8d0c3;
+  --line-strong: #b9ae9d;
+  --accent: #c2401b;       /* decorative / large text */
+  --accent-ink: #b23a16;   /* small text on paper, 5.21:1 */
+  --ok: #226b3b;           /* availability, 5.66:1 */
+}
+
+/* Dark — warm charcoal and frost */
+.dark {
+  --paper: #141210;
+  --paper-raised: #1b1815;
+  --paper-deep: #0e0c0b;
+  --ink: #f2ede4;          /* 16.03:1 on dark paper */
+  --ink-soft: #c7beb2;     /* 10.18:1 */
+  --muted: #9c9184;        /* 6.05:1 */
+  --line: #2c2621;
+  --line-strong: #4b4238;
+  --accent: #e86a44;       /* decorative / large text, 5.85:1 */
+  --accent-ink: #f09172;   /* small text on dark paper, 8.01:1 */
+  --ok: #6bd08f;           /* availability, 9.83:1 */
+}
 ```
 
-No other hues. No opacity-based text colours for body copy; use the solid tokens above.
+Both palettes keep the same role for every token: `accent` is never used for small text, `accent-ink` is the small-text accent, `line` is a decorative hairline and `line-strong` is an interactive boundary. No other hues. No opacity-based text colours for body copy; use the solid tokens above.
 
 ```css
 /* Shape and elevation */
@@ -153,9 +174,17 @@ Limits: hero headline ≤ 3 lines at desktop and ≤ 4 at mobile. Intro paragrap
 - Height 72px, sticky at the top, paper background at 96% opacity with a hairline bottom border. No blur.
 - Left: wordmark "Arpit Pandey" (15px semibold) over "Frontend Developer" (9px mono, muted).
 - Centre: Work / About / Experience / Contact.
-- Right: availability dot + "Available for work" (hidden below 1200), CV button (black, 40px tall).
-- Below 1024: availability and CV move into the drawer; the header shows wordmark + menu button only.
+- Right: availability dot + "Available for work" (hidden below 1200), theme toggle, CV button (black, 40px tall).
+- Below 1024: availability, theme toggle and CV move into the drawer; the header shows wordmark + menu button only.
 - Active section uses a 1px accent underline, not a pill.
+
+#### Theme toggle
+
+- A 44×44 icon button with a sun/moon glyph, a 1px `line` border and no fill. It sits immediately before the CV button on desktop and at the end of the mobile drawer.
+- First visit follows the operating system preference. An explicit choice is stored in `localStorage` and wins on later visits.
+- The toggle switches between light and dark only; it does not cycle through a third "system" state. The accessible name describes the action ("Switch to dark theme" / "Switch to light theme").
+- The resolved theme is applied before first paint so the page never flashes the wrong background.
+- The admin dashboard does not show the toggle and is always rendered in the light palette.
 
 #### Home page
 
@@ -217,7 +246,8 @@ Limits: hero headline ≤ 3 lines at desktop and ≤ 4 at mobile. Intro paragrap
 
 Create or replace these public components:
 
-- `Navbar` — sticky header, desktop nav, mobile drawer, active section, CV link.
+- `Navbar` — sticky header, desktop nav, mobile drawer, active section, theme toggle, CV link.
+- `ThemeToggle` — client island that reads `next-themes` and renders the 44×44 toggle; used by the header and the drawer.
 - `Footer` — editorial footer.
 - `Button` — variants: `primary` (black), `outline` (1px line), `text` (accent inline link with arrow). All 2px radius, 40–48px height.
 - `SectionLabel` — mono uppercase label with optional count/right slot.
@@ -247,8 +277,10 @@ Delete or stop using the old gradient/glow patterns. Old SVG and image assets ma
 
 ### Accessibility
 
-- Body text and small labels meet 4.5:1; large text meets 3:1. Tokens above are verified against `--paper`.
-- Visible `:focus-visible` ring: 2px `--accent-ink` offset 3px.
+- Body text and small labels meet 4.5:1; large text meets 3:1. Both palettes are verified against their own `--paper`.
+- Visible `:focus-visible` ring: 2px `--accent-ink` offset 3px, in both themes.
+- The theme toggle is a real `<button>` with a 44×44 target and an action-based `aria-label`; it does not rely on the icon alone.
+- Text and controls remain legible in both themes; no meaning depends on a colour that changes between them.
 - Skip link to `#main`.
 - One `h1` per page; sections use `h2`/`h3` in order.
 - Mobile drawer traps focus, closes on Escape and restores focus to the trigger.
@@ -268,22 +300,29 @@ Delete or stop using the old gradient/glow patterns. Old SVG and image assets ma
 ### Technical approach
 
 - Keep the App Router structure and all API/data code intact.
-- Update `app/globals.css`: replace brand tokens with the new token set; remove gradient/glow utilities; set paper background and ink text; keep Tailwind v4 `@theme` usage.
-- Update `app/layout.tsx`: Inter + Geist Mono via `next/font`, paper background, metadata (`Arpit Pandey — Frontend Developer`), Open Graph basics. Remove `ThemeProvider` and `next-themes` usage.
+- Update `app/globals.css`: replace brand tokens with the semantic light/dark token sets; remove gradient/glow utilities; map the tokens into `@theme inline` so utilities follow the active theme; keep the Tailwind v4 `@custom-variant dark` line for legacy admin `dark:` classes, scoped so it does not apply inside `[data-admin]`; set paper background and ink text via the variables.
+- Update `app/layout.tsx`: Inter + Geist Mono via `next/font`, paper background, metadata (`Arpit Pandey — Frontend Developer`), Open Graph basics. Keep `next-themes` and `ThemeProvider` (`attribute="class"`, `defaultTheme="system"`, `enableSystem`, `suppressHydrationWarning`) because alternate theme handling would duplicate what the dependency already does safely before paint.
+- Add `components/ThemeToggle.tsx`; place it in the desktop header and the mobile drawer. Do not add a theme control to admin.
+- Admin compatibility: add `data-admin` to the root element of `app/admin/page.tsx` and `app/admin/login/page.tsx`. CSS pins `[data-admin]` to `color-scheme: light`, paper background and ink text, and the `dark:` variant is excluded inside it, so the existing `brand-*` / `dark:` classes continue to render exactly as they do today.
+- Keep the legacy `brand-*` aliases mapped to fixed light values (not theme variables). Admin is the only consumer; public pages must not use them.
 - Rewrite `app/page.tsx` as a server component. Extract only the mobile menu and reveal animations into small client components. Hero/credential/experience/education/toolkit data stays in a typed object at the top of the file (or a local `lib/profile.ts` if it improves clarity).
 - Home project data: read the same project source as the rest of the site on the server, with `revalidate = 60` and the existing `defaultProjects` fallback when the database is unavailable. Admin edits and reorders appear on the home page within one minute without a redeploy. The projects index keeps its current client-side fetch so admin changes appear there immediately.
-- Rewrite `components/Navbar.tsx`, `Footer.tsx`, `Button.tsx`; add `SectionLabel`, `WorkCard`, `ContactForm`, `Reveal` as needed.
-- Restyle `app/projects/page.tsx`, `app/projects/[slug]/page.tsx`, `app/contact/page.tsx`, `components/MediaCarousel.tsx`, `components/MarkdownViewer.tsx`.
+- Rewrite `components/Navbar.tsx`, `Footer.tsx`, `Button.tsx`; add `SectionLabel`, `WorkCard`, `ContactForm`, `Reveal`, `ThemeToggle` as needed.
+- Restyle `app/projects/page.tsx`, `app/projects/[slug]/page.tsx`, `app/contact/page.tsx`, `components/MediaCarousel.tsx`, `components/MarkdownViewer.tsx`. Case-study code blocks use `bg-paper-deep text-ink`, not an inverted light block in dark mode.
 - Update the `src` for Digital Poonam and AI Bizz Pro in `lib/defaultProjects.ts` to the new captures. If the live database already has these records, update their `src` through the admin panel (or a one-off update) so the database does not keep pointing at `dummy-landing-page.png`; the fallback must be correct either way.
 - Keep `lib/defaultProjects.ts` in shape otherwise, along with `lib/mongodb.ts`, `lib/auth.ts`, `lib/slug.ts`, `models/*`, `app/api/*`, and admin pages functionally unchanged.
-- Remove the theme toggle and `next-themes` dependency if nothing else uses it. Remove `Moon.svg` / `Sun.svg` imports.
-- Use `next/image` for all raster images with correct `sizes`; portrait gets `priority`; project covers lazy-load.
-- Metadata: per-page titles/descriptions; case study metadata already exists and stays.
-- Do not add new runtime dependencies unless required (none are expected).
+- Remove the old bespoke theme toggle markup from `Navbar` and the `Moon.svg` / `Sun.svg` image imports; replace with the shared `ThemeToggle`. Keep the `next-themes` dependency.
+- Use `next/image` for all raster images with correct `sizes`; portrait gets `priority`; project covers lazy-load. Project image frames carry a 1px `line` border so screenshots separate from the background in dark mode.
+- Metadata: per-page titles/descriptions; case study metadata already exists and stays. Add `themeColor` entries for both schemes.
+- Do not add new runtime dependencies (none are expected; `next-themes` is already installed).
 
-### Light-only decision
+### Dark mode decision
 
-The current site ships a light/dark toggle. This redesign is a paper-and-ink system; a dark variant would double the surface area and invite exactly the kind of decorative inconsistency the redesign removes. The release is light-only and the toggle is removed. This is a reversible call: a dark mode can be added later as a separate, deliberate token set.
+Signal was designed as a paper-and-ink system, and dark mode keeps that identity rather than inventing a second one: the same warm temperature, the same vermilion accent, the same hairlines and the same type. The dark palette simply swaps paper for warm charcoal and ink for frost, with accent values lifted only as far as contrast requires.
+
+The implementation uses one semantic token layer and `next-themes` rather than duplicating components with `dark:` classes. This keeps the surface area at one component tree, makes contrast auditable per token, and means new components get both themes for free. Admin is deliberately excluded from the visual theme: it is pinned to light via `[data-admin]` and its `dark:` classes are neutralised inside that scope, so the untouched dashboard remains predictable.
+
+Dark mode is not a decorative extra; it is part of the accessibility and comfort story for a site that hiring managers may read at night. It must not become an excuse for glows, gradients or low-contrast "premium" surfaces.
 
 ## Decisions left to the builder
 
@@ -298,10 +337,11 @@ The current site ships a light/dark toggle. This redesign is a paper-and-ink sys
 
 - `npm run lint` and `npm run build` pass.
 - All public pages render with no database connection (fallback data).
-- Visual check at 1440, 1280, 1024, 768, 390 and 360 widths.
-- Keyboard pass: skip link, nav, drawer, project cards, form, copy buttons.
-- Contrast spot-check for every text token on paper.
-- Reduced-motion pass.
-- Admin: login, project create/edit/delete/reorder, image upload, message list, delete, logout all still work.
+- Visual check at 1440, 1280, 1024, 768, 390 and 360 widths, in both light and dark.
+- Keyboard pass: skip link, nav, theme toggle, drawer, project cards, form, copy buttons.
+- Contrast spot-check for every text token on its own theme background (light and dark).
+- Theme pass: first visit follows the OS preference; the toggle switches and persists across reloads and navigation; no flash of the wrong background; both themes keep identical layout and content.
+- Reduced-motion pass in both themes.
+- Admin: login, project create/edit/delete/reorder, image upload, message list, delete, logout all still work and the dashboard remains on the light palette even when the public site is dark.
 - No console errors; images have dimensions and alt text; no layout shift from the hero portrait.
 - The two new captures render on the home cards, the projects index and both case studies, and the old `dummy-landing-page.png` is no longer used for Digital Poonam or AI Bizz Pro.

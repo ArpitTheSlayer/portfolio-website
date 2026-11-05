@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the public portfolio's gradient/glass styling with the Signal paper-and-ink system, keeping every real fact, API route, database model and admin flow intact.
+**Goal:** Replace the public portfolio's gradient/glass styling with the Signal paper-and-ink system and a matching dark theme, keeping every real fact, API route, database model and admin flow intact.
 
-**Architecture:** Tokens and typography live in `app/globals.css` and `app/layout.tsx`. Public content moves into typed modules (`lib/profile.ts`, `lib/projects.ts`). Shared presentational components (`Button`, `SectionLabel`, `WorkCard`, `Reveal`, `SocialLinks`) carry the visual system. Pages become server components except where interaction requires the client (projects fetch, contact form, copy buttons, navbar, reveals).
+**Architecture:** Tokens and typography live in `app/globals.css` and `app/layout.tsx`. One semantic token layer is defined for light (`:root`) and dark (`.dark`) and mapped into Tailwind, so components never branch on theme. `next-themes` applies system preference or the stored choice before paint. Public content moves into typed modules (`lib/profile.ts`, `lib/projects.ts`). Shared presentational components (`Button`, `SectionLabel`, `WorkCard`, `Reveal`, `SocialLinks`, `ThemeToggle`) carry the visual system. Pages become server components except where interaction requires the client (projects fetch, contact form, copy buttons, navbar, reveals). Admin is pinned to the light palette via `[data-admin]`.
 
 **Tech Stack:** Next.js 16.4.5 (App Router, Turbopack), React 19.3.1, TypeScript 5.9, Tailwind CSS 4.3.4, motion 13.5.1, lucide-react 1.68.0.
 
@@ -14,17 +14,20 @@
 
 ## Global Constraints
 
-- Light only. Remove `next-themes`, `ThemeProvider` and the theme toggle. Keep the `@custom-variant dark` line so legacy `dark:` classes in the admin stay inert.
-- Public palette is exactly: `--paper #f3efe6`, `--paper-raised #ebe4d7`, `--paper-deep #e2d9ca`, `--ink #1b1815`, `--ink-soft #4c463f`, `--muted #6b6259`, `--line #d8d0c3`, `--line-strong #b9ae9d`, `--accent #c2401b`, `--accent-ink #b23a16`, `--ok #226b3b`.
+- Two themes, one component tree. Light is paper-and-ink; dark is warm charcoal-and-frost. Components consume semantic utilities only (`bg-paper`, `text-ink`, `border-line`, `text-accent-ink`) and must not hardcode hex values or add colour `dark:` overrides.
+- Keep `next-themes` and `ThemeProvider` (`attribute="class"`, `defaultTheme="system"`, `enableSystem`, `suppressHydrationWarning`). Add a shared `ThemeToggle`; do not remove the dependency.
+- Light palette: `--paper #f3efe6`, `--paper-raised #ebe4d7`, `--paper-deep #e2d9ca`, `--ink #1b1815`, `--ink-soft #4c463f`, `--muted #6b6259`, `--line #d8d0c3`, `--line-strong #b9ae9d`, `--accent #c2401b`, `--accent-ink #b23a16`, `--ok #226b3b`.
+- Dark palette: `--paper #141210`, `--paper-raised #1b1815`, `--paper-deep #0e0c0b`, `--ink #f2ede4`, `--ink-soft #c7beb2`, `--muted #9c9184`, `--line #2c2621`, `--line-strong #4b4238`, `--accent #e86a44`, `--accent-ink #f09172`, `--ok #6bd08f`.
+- Admin stays on the light palette. Add `data-admin` to both admin roots; CSS pins it to light and the `dark:` variant is excluded inside it. `brand-*` aliases are fixed light values and are used by admin only.
 - Fonts: Inter (UI/body) and Geist Mono (labels/metadata), both via `next/font`.
 - Container `1312px`; gutters 64/48/40/24 at ≥1280 / 1024–1279 / 768–1023 / ≤767.
-- Corners 0–2px on public pages. No gradients, glows, glass, shadows or rounded pills.
+- Corners 0–2px on public pages. No gradients, glows, glass, shadows or rounded pills in either theme.
 - Preserve every fact: name, role, location, availability, email, phone, socials, experience, achievements, education, project names, descriptions, links and screenshots. Rewrite only connective copy.
-- No new runtime dependencies. `next-themes` is removed.
-- Keep `lib/mongodb.ts`, `lib/auth.ts`, `lib/slug.ts`, `models/*`, `app/api/*` and `app/admin/*` functionally unchanged.
+- No new runtime dependencies. `next-themes` is already installed and stays.
+- Keep `lib/mongodb.ts`, `lib/auth.ts`, `lib/slug.ts`, `models/*`, `app/api/*` and `app/admin/*` functionally unchanged. Admin gets only the `data-admin` attribute needed to pin its theme.
 - The working tree contains many pre-existing uncommitted files. `git add` only the paths listed in each task.
 - After every task: `npm run lint` then `npm run build` must pass.
-- Target WCAG 2.2 AA: 4.5:1 body text, 3:1 large text, visible focus, skip link, one `h1` per page.
+- Target WCAG 2.2 AA: 4.5:1 body text, 3:1 large text, visible focus, skip link, one `h1` per page, in both themes.
 
 ## Review Focus
 
@@ -32,9 +35,11 @@ These are the failure modes the spec implies but no task's build check proves. E
 
 1. **Database unavailable at build or request time.** Home, projects index and case study must render the eight fallback projects instead of throwing. → Task 3, step 5.
 2. **`prefers-reduced-motion: reduce`.** Sections must be visible immediately, with no transforms or delayed reveals. → Task 4, step 4 and Task 11, step 5.
-3. **Keyboard-only use of the mobile drawer.** Focus must enter the drawer, cycle inside it, close on Escape, and return to the trigger. → Task 6, step 6.
+3. **Keyboard-only use of the mobile drawer and theme toggle.** Focus must enter the drawer, cycle inside it, close on Escape, and return to the trigger; the toggle must have an action-based name. → Task 6, step 6 and Task 11, step 5.
 4. **360px viewport.** Long project names, tag lines, email, phone, nav and form must not cause horizontal overflow. → Task 11, step 4.
-5. **Admin after the token change.** Admin pages use `brand-*` classes; without aliases they render unstyled. → Task 2, step 6.
+5. **Admin after the token change.** Admin pages use `brand-*` classes; without fixed aliases they render unstyled. → Task 2, step 6.
+6. **Theme flash and theme drift.** The resolved theme must be applied before paint, and both themes must use the same components and layout. → Task 2, steps 2 and 4 and Task 11, steps 3, 6.
+7. **Dark contrast.** Every text token must be checked against the dark `--paper`, not the light one. → Task 2, step 7 and Task 11, step 8.
 
 ---
 
@@ -66,36 +71,74 @@ git commit -m "chore(deps): update packages within current majors"
 
 ---
 
-### Task 2: Token system, fonts and layout shell
+### Task 2: Token system, themes, fonts and layout shell
 
 **Files:**
 - Modify: `app/globals.css`
 - Modify: `app/layout.tsx`
-- Modify: `package.json`, `package-lock.json` (remove `next-themes`)
+- Create: `components/ThemeToggle.tsx`
+- Modify: `app/admin/page.tsx`, `app/admin/login/page.tsx` (add `data-admin` to the root element only)
+- Keep: `package.json`, `package-lock.json` (`next-themes` stays)
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: Tailwind utilities `bg-paper`, `bg-paper-raised`, `bg-paper-deep`, `text-ink`, `text-ink-soft`, `text-muted`, `border-line`, `border-line-strong`, `text-accent`, `text-accent-ink`, `text-ok`, `text-display`, `text-page`, `text-section`, `text-card`, `text-body-lg`, `text-label`, `text-meta`, `max-w-site`, `font-mono`; global `.skip-link`, focus ring, reduced-motion rules, and inert legacy `brand-*` aliases for admin.
+- Produces: Tailwind utilities `bg-paper`, `bg-paper-raised`, `bg-paper-deep`, `text-ink`, `text-ink-soft`, `text-muted`, `border-line`, `border-line-strong`, `text-accent`, `text-accent-ink`, `text-ok`, `text-display`, `text-page`, `text-section`, `text-card`, `text-body-lg`, `text-label`, `text-meta`, `max-w-site`, `font-mono`; global `.skip-link`, focus ring, reduced-motion rules; a working light/dark theme; fixed legacy `brand-*` aliases and a light-pinned admin scope; `ThemeToggle`.
 
 - [ ] **Step 1: Replace `app/globals.css`**
 
-Remove the Google Fonts `@import` and the `.dark` block. Keep `@import "tailwindcss";` and `@custom-variant dark (&:where(.dark, .dark *));`. Write:
+Remove the Google Fonts `@import` and the old `.dark` block. Keep `@import "tailwindcss";`. Write:
 
 ```css
-@theme {
-  --color-paper: #f3efe6;
-  --color-paper-raised: #ebe4d7;
-  --color-paper-deep: #e2d9ca;
-  --color-ink: #1b1815;
-  --color-ink-soft: #4c463f;
-  --color-muted: #6b6259;
-  --color-line: #d8d0c3;
-  --color-line-strong: #b9ae9d;
-  --color-accent: #c2401b;
-  --color-accent-ink: #b23a16;
-  --color-ok: #226b3b;
+@import "tailwindcss";
 
-  /* Legacy aliases. Admin still uses brand-*; public pages must not. */
+/* Admin opts out of the dark theme; its legacy dark: classes stay inert. */
+@custom-variant dark (&:where(.dark, .dark *):not(:where([data-admin], [data-admin] *)));
+
+:root {
+  --paper: #f3efe6;
+  --paper-raised: #ebe4d7;
+  --paper-deep: #e2d9ca;
+  --ink: #1b1815;
+  --ink-soft: #4c463f;
+  --muted: #6b6259;
+  --line: #d8d0c3;
+  --line-strong: #b9ae9d;
+  --accent: #c2401b;
+  --accent-ink: #b23a16;
+  --ok: #226b3b;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #141210;
+  --paper-raised: #1b1815;
+  --paper-deep: #0e0c0b;
+  --ink: #f2ede4;
+  --ink-soft: #c7beb2;
+  --muted: #9c9184;
+  --line: #2c2621;
+  --line-strong: #4b4238;
+  --accent: #e86a44;
+  --accent-ink: #f09172;
+  --ok: #6bd08f;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-ok: var(--ok);
+
+  /* Legacy aliases. Admin still uses brand-*; public pages must not.
+     Fixed light values so the pinned-light admin is predictable. */
   --color-brand-red: #b23a16;
   --color-brand-orange: #c2401b;
   --color-brand-cream: #f3efe6;
@@ -131,15 +174,11 @@ Remove the Google Fonts `@import` and the `.dark` block. Keep `@import "tailwind
   --text-meta--line-height: 1.5;
   --text-meta--letter-spacing: 0.08em;
 
-  --container-site: 1312px;
-}
-
-@theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
-}
 
-:root { color-scheme: light; }
+  --container-site: 1312px;
+}
 
 html {
   scroll-behavior: smooth;
@@ -148,19 +187,26 @@ html {
 
 body {
   min-height: 100vh;
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Admin is out of the visual redesign and stays on the light palette. */
+[data-admin] {
+  color-scheme: light;
+  background: #f3efe6;
+  color: #1b1815;
+}
+
 ::selection {
-  background: var(--color-accent);
-  color: var(--color-paper);
+  background: var(--accent);
+  color: var(--paper);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent-ink);
+  outline: 2px solid var(--accent-ink);
   outline-offset: 3px;
 }
 
@@ -169,8 +215,8 @@ body {
   left: -9999px;
   top: 0;
   z-index: 100;
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--ink);
+  color: var(--paper);
   padding: 12px 16px;
 }
 .skip-link:focus { left: 16px; top: 16px; }
@@ -191,7 +237,7 @@ body {
 
 - [ ] **Step 2: Rewrite `app/layout.tsx`**
 
-Import `Inter` and `Geist_Mono` from `next/font/google` with `variable: "--font-inter"` / `"--font-geist-mono"`, `subsets: ["latin"]`, `display: "swap"`. Remove `ThemeProvider` and `suppressHydrationWarning`. Export:
+Import `Inter` and `Geist_Mono` from `next/font/google` with `variable: "--font-inter"` / `"--font-geist-mono"`, `subsets: ["latin"]`, `display: "swap"`. Keep `ThemeProvider` from `next-themes`. Export metadata and viewport:
 
 ```ts
 export const metadata: Metadata = {
@@ -211,40 +257,94 @@ export const metadata: Metadata = {
     siteName: "Arpit Pandey",
   },
 };
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#141210" },
+  ],
+};
 ```
 
-Body: `className={inter.variable + " " + geistMono.variable + " bg-paper text-ink"}`, then `<a href="#main" className="skip-link">Skip to content</a>` and `{children}`. No theme provider.
+`<html lang="en" suppressHydrationWarning>`; body `className={inter.variable + " " + geistMono.variable + " bg-paper text-ink"}`. Wrap with:
 
-- [ ] **Step 3: Remove the theme dependency**
+```tsx
+<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+  <a href="#main" className="skip-link">Skip to content</a>
+  {children}
+</ThemeProvider>
+```
 
-Run: `npm uninstall next-themes`
-Expected: `package.json` no longer lists `next-themes`; `package-lock.json` updates.
+The `suppressHydrationWarning` is required because `next-themes` sets the class before React hydrates.
 
-- [ ] **Step 4: Prove the theme wiring is gone**
+- [ ] **Step 3: Keep the theme dependency**
 
-Run: `Get-ChildItem app,components,lib -Recurse -Include *.ts,*.tsx | Select-String -Pattern "next-themes|ThemeProvider|useTheme"`
-Expected: no matches.
+Confirm `next-themes` remains in `package.json`. Do not run `npm uninstall`. It is the only safe way to apply the stored/system theme before first paint without a custom blocking script.
 
-- [ ] **Step 5: Verify token contrast**
+- [ ] **Step 4: Create `components/ThemeToggle.tsx`**
+
+Client component using `next-themes` and a mounted guard:
+
+```tsx
+"use client";
+import { useSyncExternalStore } from "react";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+
+const emptySubscribe = () => () => {};
+const useMounted = () => useSyncExternalStore(emptySubscribe, () => true, () => false);
+
+export default function ThemeToggle({ className = "" }: { className?: string }) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useMounted();
+  const isDark = mounted && resolvedTheme === "dark";
+  const label = isDark ? "Switch to light theme" : "Switch to dark theme";
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={label}
+      title={label}
+      className={`grid size-11 place-items-center border border-line text-ink-soft transition-colors hover:border-ink hover:text-ink ${className}`}
+    >
+      {isDark ? <Sun aria-hidden="true" className="size-4" /> : <Moon aria-hidden="true" className="size-4" />}
+    </button>
+  );
+}
+```
+
+The server and first client render both show the moon, so hydration matches; the icon corrects after mount.
+
+- [ ] **Step 5: Pin the admin pages to light**
+
+In `app/admin/page.tsx` and `app/admin/login/page.tsx`, add `data-admin` to the outermost `<div>` that already has `min-h-screen`. Change nothing else. Verify the attribute exists twice:
+
+```powershell
+Select-String -Path app/admin/page.tsx,app/admin/login/page.tsx -Pattern "data-admin"
+```
+
+- [ ] **Step 6: Verify token contrast in both themes**
 
 Run:
 
 ```powershell
-node -e "const L=h=>{const c=h.replace('#','').match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};const r=(a,b)=>((Math.max(L(a),L(b))+.05)/(Math.min(L(a),L(b))+.05)).toFixed(2);for(const [n,c] of Object.entries({ink:'#1b1815','ink-soft':'#4c463f',muted:'#6b6259','accent-ink':'#b23a16',accent:'#c2401b',ok:'#226b3b'}))console.log(n,r(c,'#f3efe6'))"
+node -e "const L=h=>{const c=h.replace('#','').match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};const r=(a,b)=>((Math.max(L(a),L(b))+.05)/(Math.min(L(a),L(b))+.05)).toFixed(2);const sets={light:{bg:'#f3efe6',c:{ink:'#1b1815','ink-soft':'#4c463f',muted:'#6b6259','accent-ink':'#b23a16',accent:'#c2401b',ok:'#226b3b'}},dark:{bg:'#141210',c:{ink:'#f2ede4','ink-soft':'#c7beb2',muted:'#9c9184','accent-ink':'#f09172',accent:'#e86a44',ok:'#6bd08f'}}};for(const [t,s] of Object.entries(sets))for(const [n,c] of Object.entries(s.c))console.log(t,n,r(c,s.bg))"
 ```
 
-Expected: `ink 15.40`, `ink-soft 8.11`, `muted 5.20`, `accent-ink 5.21`, `accent 4.53`, `ok 5.66`.
+Expected light: `ink 15.40`, `ink-soft 8.11`, `muted 5.20`, `accent-ink 5.21`, `accent 4.53`, `ok 5.66`.
+Expected dark: `ink 16.03`, `ink-soft 10.18`, `muted 6.05`, `accent-ink 8.01`, `accent 5.85`, `ok 9.83`.
 
-- [ ] **Step 6: Verify the admin still renders with legacy aliases**
+- [ ] **Step 7: Verify admin and the build**
 
 Run: `npm run build`
-Expected: pass. Open `/admin/login` later in Task 11 and confirm the panel is still legible (cream surface, dark text, orange accents) rather than unstyled.
+Expected: pass. Open `/admin/login` later in Task 11 and confirm the panel is still legible (cream surface, dark text, orange accents) even while the public site is in dark mode.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```powershell
-git add app/globals.css app/layout.tsx package.json package-lock.json
-git commit -m "feat(design): add signal tokens, fonts and layout shell"
+git add app/globals.css app/layout.tsx components/ThemeToggle.tsx app/admin/page.tsx app/admin/login/page.tsx
+git commit -m "feat(design): add signal light and dark theme tokens"
 ```
 
 ---
@@ -541,12 +641,12 @@ git commit -m "feat(ui): add signal button, label, reveal and social primitives"
 - Modify: `components/Footer.tsx`
 
 **Interfaces:**
-- Consumes: `Button`, `SocialLinks`, `profile`.
-- Produces: the shared header (`<header>` 72px sticky) and footer used by every public page.
+- Consumes: `Button`, `SocialLinks`, `profile`, `ThemeToggle`.
+- Produces: the shared header (`<header>` 72px sticky) and footer used by every public page, with the theme toggle reachable on desktop and in the drawer.
 
 - [ ] **Step 1: Rewrite `Navbar.tsx`**
 
-Client component. Delete the logo image, theme toggle, admin link and `next-themes` imports.
+Client component. Delete the logo image, the bespoke theme toggle markup, the admin link, the `next-themes` import and the `Moon.svg` / `Sun.svg` image imports. Render the shared `<ThemeToggle />` instead.
 
 Nav items, in order:
 
@@ -564,7 +664,7 @@ Header:
 - Inner `mx-auto flex h-full max-w-site items-center justify-between px-6 md:px-10 lg:px-16`.
 - Wordmark Link to `/`: name at `text-[15px] font-semibold tracking-tight`, role underneath at `font-mono text-[9px] uppercase tracking-[0.16em] text-muted`.
 - Desktop nav visible from `lg`; active item has a 1px accent underline (`after:` pseudo-element), inactive `text-ink-soft hover:text-ink`. Use `aria-current="page"` for the active item.
-- Right side: availability dot (`size-1.5 rounded-full bg-ok`) and `Available for work` at `text-sm text-ink-soft`, hidden below `xl`; `Button text="Download CV" link="/Resume.pdf"`.
+- Right side: availability dot (`size-1.5 rounded-full bg-ok`) and `Available for work` at `text-sm text-ink-soft`, hidden below `xl`; `<ThemeToggle />`; `Button text="Download CV" link="/Resume.pdf"`.
 - Mobile trigger: 44×44 button, `aria-expanded`, `aria-controls="mobile-nav"`, `Menu`/`X` icons.
 
 Mobile drawer:
@@ -572,7 +672,7 @@ Mobile drawer:
 - Lock body scroll while open; restore on close/unmount.
 - On open, focus the first link. Trap Tab/Shift+Tab inside the panel. Escape closes. On close, focus returns to the trigger.
 - Close on pathname change.
-- Include the four nav links, the CV button, and the availability line.
+- Include the four nav links, `<ThemeToggle />`, the CV button, and the availability line.
 
 Active state:
 - `/projects` or `/projects/*` → Work.
@@ -620,7 +720,7 @@ git commit -m "feat(nav): rebuild header and footer for the signal system"
 
 `variant="compact"` (home):
 - Whole card is one `<Link href={href} className="group block">`.
-- Image wrapper `relative aspect-[2.05/1] overflow-hidden bg-paper-deep`; `Image fill` with `sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 416px"`, `className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.015]"`.
+- Image wrapper `relative aspect-[2.05/1] overflow-hidden border border-line bg-paper-deep`; `Image fill` with `sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 416px"`, `className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.015]"`.
 - Title + arrow row `mt-4 flex items-baseline justify-between gap-4`; title `text-card font-semibold group-hover:underline decoration-1 underline-offset-4`; arrow `↗` in `text-accent`, `transition-transform group-hover:translate-x-[3px]`.
 - Meta line `mt-1 font-mono text-meta uppercase text-muted`: `project.tags?.slice(0, 2).join(" · ")`.
 
@@ -754,11 +854,11 @@ git commit -m "feat(projects): rebuild the work index as an editorial grid"
 - [ ] **Step 2: Restyle `MediaCarousel.tsx`**
 
 Keep `parseVideoEmbed`, the media list construction, index state, lightbox and all controls. Replace styling only:
-- Frame: `border border-line bg-ink`, `rounded-none`.
-- Nav buttons: `bg-ink/80 text-paper border border-line-strong hover:bg-accent` and `rounded-none`, 44×44.
-- Counter badge: `bg-ink/80 text-paper font-mono text-meta uppercase`.
+- Frame: `border border-line bg-paper-deep`, `rounded-none`.
+- Nav buttons: `bg-paper-deep/90 text-ink border border-line-strong hover:border-accent hover:text-accent-ink` and `rounded-none`, 44×44.
+- Counter badge: `bg-paper-deep/90 text-ink font-mono text-meta uppercase border border-line-strong`.
 - Thumbnails: `rounded-none border-2`; selected `border-accent`, inactive `border-line opacity-60 hover:opacity-100`.
-- Lightbox: `bg-ink/95`, close button `border-line-strong text-paper hover:text-accent rounded-none`.
+- Lightbox scrim: `bg-black/95 text-white` in both themes; close button `border-white/40 text-white hover:text-accent rounded-none`.
 - Video/iframe: `rounded-none`.
 - Use `useReducedMotion()` to set transition duration to `0` when reduced.
 
@@ -774,7 +874,7 @@ Remove the ineffective `prose` classes. Map elements to tokens:
 - `blockquote` `border-l-2 border-accent pl-4 italic text-ink-soft`
 - `a` `text-accent-ink underline decoration-accent/40 underline-offset-4 hover:decoration-accent`
 - inline `code` `bg-paper-deep px-1.5 py-0.5 font-mono text-xs text-ink`
-- code block `border border-line bg-ink text-paper`; language header `bg-ink text-line-strong font-mono text-meta uppercase`
+- code block `border border-line bg-paper-deep text-ink`; language header `bg-paper-raised text-muted font-mono text-meta uppercase`
 - table `border border-line`; `thead` `border-b border-line text-meta uppercase text-muted`; rows `divide-y divide-line`
 - `hr` `border-line`
 - empty state `text-sm text-muted`
@@ -854,7 +954,7 @@ git commit -m "feat(contact): rebuild contact page with accessible form"
 
 - [ ] **Step 1: Write `AGENTS.md`**
 
-Cover: stack and commands; route map; where profile/project data lives; the Signal token rules; the legacy `brand-*` aliases that keep admin working; no test runner; build/lint gates; the DB fallback; the screenshot paths; and the rule not to commit unrelated working-tree files.
+Cover: stack and commands; route map; where profile/project data lives; the Signal token rules and both palettes; the `ThemeToggle` / `next-themes` setup; the legacy `brand-*` aliases and `[data-admin]` pin that keep admin on the light palette; no test runner; build/lint gates; the DB fallback; the screenshot paths; and the rule not to commit unrelated working-tree files.
 
 - [ ] **Step 2: Write `todo.txt`**
 
@@ -900,7 +1000,7 @@ Expected: exit 0; `/` still builds using `defaultProjects`.
 
 - [ ] **Step 3: Launch and capture**
 
-Run `npm start` in the background. Capture with Chrome:
+Run `npm start` in the background. Capture light screenshots with Chrome:
 
 ```powershell
 $chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
@@ -917,7 +1017,20 @@ New-Item -ItemType Directory -Force -Path $out | Out-Null
 & $chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1440,1400 --screenshot="$out\case-1440.png" "http://localhost:3000/projects/digital-poonam-web-platform"
 ```
 
-Read each PNG. Check: paper background, ink type, one accent use per view, real screenshots (Digital Poonam and AI Bizz Pro are different), no gradient/glow/glass, no card shadows, alignment to the container.
+`--force-dark-mode` makes Chrome report `prefers-color-scheme: dark`, so with `defaultTheme="system"` and a fresh profile it exercises the real system-preference path. Capture the dark set:
+
+```powershell
+$profile = "$env:TEMP\opencode\chrome-dark-profile"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=1440,1400 --screenshot="$out\home-1440-dark.png" "http://localhost:3000/"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=390,1800 --screenshot="$out\home-390-dark.png" "http://localhost:3000/"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=1440,1400 --screenshot="$out\projects-1440-dark.png" "http://localhost:3000/projects"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=360,1800 --screenshot="$out\projects-360-dark.png" "http://localhost:3000/projects"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=1440,1400 --screenshot="$out\contact-1440-dark.png" "http://localhost:3000/contact"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=1440,1400 --screenshot="$out\case-1440-dark.png" "http://localhost:3000/projects/digital-poonam-web-platform"
+& $chrome --headless=new --disable-gpu --hide-scrollbars --force-dark-mode --user-data-dir=$profile --window-size=1440,1400 --screenshot="$out\admin-dark.png" "http://localhost:3000/admin/login"
+```
+
+Read each PNG. Light check: paper background, ink type, one accent use per view, real screenshots (Digital Poonam and AI Bizz Pro are different), no gradient/glow/glass, no card shadows, alignment to the container. Dark check: warm charcoal background (not pure black), frost type, the same layout and spacing, hairlines still visible, screenshots still separated from the background, and the admin screenshot still cream/ink (the public theme must not leak into admin).
 
 - [ ] **Step 4: Narrow-width overflow**
 
@@ -925,16 +1038,22 @@ Capture at `360×1600` for `/`, `/projects` and `/contact`. Check for horizontal
 
 - [ ] **Step 5: Reduced motion and keyboard**
 
-In Chrome DevTools, emulate `prefers-reduced-motion: reduce` and reload `/`. Confirm all sections are visible immediately with no transform. Tab through: skip link → header → nav → project cards → footer. Open the mobile drawer at ≤1023px: focus enters, Tab cycles, Escape closes, focus returns to the trigger.
+In Chrome DevTools, emulate `prefers-reduced-motion: reduce` and reload `/`. Confirm all sections are visible immediately with no transform. Tab through: skip link → header → nav → theme toggle → project cards → footer. The theme toggle must show a visible focus ring and expose an action-based name. Open the mobile drawer at ≤1023px: focus enters, Tab cycles, Escape closes, focus returns to the trigger.
 
-- [ ] **Step 6: Admin smoke test**
+- [ ] **Step 6: Theme behaviour**
 
-Open `/admin/login`, sign in with the `ADMIN_SECRET` value from `.env`, then confirm: project list loads; create/edit/delete/reorder works; image upload works; messages list and delete work; logout works. Confirm the page is legible with the legacy aliases (no unstyled text).
+In DevTools → Rendering, emulate `prefers-color-scheme: dark` with no stored theme (clear site data first). Load `/`: the page must be dark. Click the toggle: it must switch to light with an action-based accessible name. Reload: light must persist. Toggle back to dark, then navigate to `/projects` and `/contact`: dark must persist across navigation. Clear site data, reload: the OS preference must win again.
 
-- [ ] **Step 7: Contrast spot-check**
+Hard-reload `/` while dark and confirm there is no visible flash of the paper background before the dark theme applies. Confirm the toggle is 44×44 and does not shift the header at any breakpoint.
 
-Re-run the Task 2 Step 5 command. Confirm all values still pass. Confirm accent is not used for small text anywhere: `Get-ChildItem app,components -Recurse -Include *.tsx | Select-String -Pattern "text-accent(?![-\w])"` should only show decorative arrows or large text; small text uses `text-accent-ink`.
+- [ ] **Step 7: Admin smoke test**
 
-- [ ] **Step 8: Stop the server and report**
+Open `/admin/login`, sign in with the `ADMIN_SECRET` value from `.env`, then confirm: project list loads; create/edit/delete/reorder works; image upload works; messages list and delete work; logout works. Confirm the page is legible with the legacy aliases (no unstyled text) and stays cream/ink even when the public site is dark.
+
+- [ ] **Step 8: Contrast spot-check**
+
+Re-run the Task 2 Step 6 command. Confirm all light and dark values still pass. Confirm accent is not used for small text anywhere: `Get-ChildItem app,components -Recurse -Include *.tsx | Select-String -Pattern "text-accent(?![-\w])"` should only show decorative arrows or large text; small text uses `text-accent-ink`.
+
+- [ ] **Step 9: Stop the server and report**
 
 Stop the background `npm start`. Report the captured paths, the build output, and any manual items left in `instructions.txt`. Do not commit build artifacts or screenshots.
