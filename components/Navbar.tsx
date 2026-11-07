@@ -20,7 +20,7 @@ function NavLinks({
   mobile = false,
 }: {
   activeHref: string;
-  onItemClick?: () => void;
+  onItemClick?: (href: string) => void;
   mobile?: boolean;
 }) {
   return (
@@ -31,7 +31,7 @@ function NavLinks({
           <li key={item.href}>
             <Link
               href={item.href}
-              onClick={onItemClick}
+              onClick={() => onItemClick?.(item.href)}
               aria-current={isActive ? "page" : undefined}
               className={
                 mobile
@@ -146,6 +146,20 @@ export default function Navbar() {
     triggerRef.current?.focus();
   };
 
+  const scrollToTop = () => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  };
+
+  const handleItemClick = (href: string) => {
+    if (href === pathname) scrollToTop();
+  };
+
+  const handleMobileItemClick = (href: string) => {
+    closeMenu();
+    handleItemClick(href);
+  };
+
   return (
     <header className="sticky top-0 z-40 h-[72px] border-b border-line bg-paper/95">
       <div className="mx-auto flex h-full max-w-site items-center justify-between px-6 md:px-10 lg:px-16">
@@ -159,7 +173,7 @@ export default function Navbar() {
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">
-          <NavLinks activeHref={activeHref} />
+          <NavLinks activeHref={activeHref} onItemClick={handleItemClick} />
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -203,7 +217,7 @@ export default function Navbar() {
           <nav aria-label="Mobile">
             <NavLinks
               activeHref={activeHref}
-              onItemClick={closeMenu}
+              onItemClick={handleMobileItemClick}
               mobile
             />
           </nav>
